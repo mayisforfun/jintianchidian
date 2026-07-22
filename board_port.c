@@ -27,14 +27,26 @@
 #define RIGHT_PWM_CC_INDEX DL_TIMER_CC_1_INDEX
 #endif
 
+#if (GRAY_SAMPLE_COUNT == 0U) || ((GRAY_SAMPLE_COUNT % 2U) == 0U)
+#error "GRAY_SAMPLE_COUNT must be a non-zero odd number"
+#endif
+
 static void set_pwm_duty(GPTIMER_Regs *timer, DL_TIMER_CC_INDEX cc_index, uint16_t duty)
 {
+    uint16_t compare_value;
+
     if (duty > MOTOR_PWM_PERIOD_COUNTS) {
         duty = MOTOR_PWM_PERIOD_COUNTS;
     }
 
+#if MOTOR_PWM_COMPARE_IS_INVERTED
+    compare_value = MOTOR_PWM_PERIOD_COUNTS - duty;
+#else
+    compare_value = duty;
+#endif
+
     DL_TimerG_setCaptureCompareValue(timer,
-                                     MOTOR_PWM_PERIOD_COUNTS - duty,
+                                     compare_value,
                                      cc_index);
 }
 
@@ -69,10 +81,12 @@ void Board_init(void)
 #endif
 
     DL_TimerG_startCounter(LEFT_PWM_INST);
-    DL_TimerG_startCounter(RIGHT_PWM_INST);
+    if (LEFT_PWM_INST != RIGHT_PWM_INST) {
+        DL_TimerG_startCounter(RIGHT_PWM_INST);
+    }
 }
 
-uint8_t Board_readGray5(void)
+static uint8_t read_gray5_once(void)
 {
     uint8_t bits = 0;
 
@@ -93,12 +107,56 @@ uint8_t Board_readGray5(void)
     return bits;
 }
 
+uint8_t Board_readGray5(void)
+{
+    uint8_t counts[5] = {0};
+    uint8_t bits = 0;
+
+    for (uint8_t sample = 0; sample < GRAY_SAMPLE_COUNT; sample++) {
+        uint8_t raw_bits = read_gray5_once();
+
+        for (uint8_t bit = 0; bit < 5U; bit++) {
+            if ((raw_bits & (1U << bit)) != 0U) {
+                counts[bit]++;
+            }
+        }
+
+#if GRAY_SAMPLE_INTERVAL_CYCLES > 0U
+        if (sample + 1U < GRAY_SAMPLE_COUNT) {
+            delay_cycles(GRAY_SAMPLE_INTERVAL_CYCLES);
+        }
+#endif
+    }
+
+    for (uint8_t bit = 0; bit < 5U; bit++) {
+        if (counts[bit] > (GRAY_SAMPLE_COUNT / 2U)) {
+            bits |= (uint8_t) (1U << bit);
+        }
+    }
+
+    return bits;
+}
+
+static uint16_t speed_to_duty(int16_t speed)
+{
+    int32_t duty = speed;
+
+    if (duty < 0) {
+        duty = -duty;
+    }
+    if (duty > (int32_t) MOTOR_PWM_PERIOD_COUNTS) {
+        duty = MOTOR_PWM_PERIOD_COUNTS;
+    }
+
+    return (uint16_t) duty;
+}
+
 void Board_setMotorSpeed(int16_t left_speed, int16_t right_speed)
 {
     bool left_forward = (left_speed >= 0);
     bool right_forward = (right_speed >= 0);
-    uint16_t left_duty = (uint16_t) (left_forward ? left_speed : -left_speed);
-    uint16_t right_duty = (uint16_t) (right_forward ? right_speed : -right_speed);
+    uint16_t left_duty = speed_to_duty(left_speed);
+    uint16_t right_duty = speed_to_duty(right_speed);
 
     set_left_direction(left_forward);
     set_right_direction(right_forward);

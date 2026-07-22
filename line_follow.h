@@ -11,15 +11,17 @@ typedef struct {
     uint16_t max_speed;
     int16_t kp_q10;
     int16_t kd_q10;
-    uint8_t lost_turn_speed;
+    uint16_t lost_turn_speed;
 } LineFollowConfig;
 
 typedef struct {
+    uint8_t raw_sensor_bits;
     uint8_t sensor_bits;
     int16_t position;
     int16_t error;
     int16_t last_error;
     bool line_seen;
+    bool sensor_valid;
     int16_t left_speed;
     int16_t right_speed;
 } LineFollowState;

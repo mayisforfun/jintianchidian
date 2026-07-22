@@ -27,9 +27,25 @@
  * SysConfig still needs to initialize these pins as GPIO input/output/PWM.
  */
 
+#ifndef GRAY_BLACK_IS_LOW
 #define GRAY_BLACK_IS_LOW 1
+#endif
 
+#ifndef GRAY_SAMPLE_COUNT
+#define GRAY_SAMPLE_COUNT 3U
+#endif
+
+#ifndef GRAY_SAMPLE_INTERVAL_CYCLES
+#define GRAY_SAMPLE_INTERVAL_CYCLES 0U
+#endif
+
+#ifndef MOTOR_PWM_COMPARE_IS_INVERTED
+#define MOTOR_PWM_COMPARE_IS_INVERTED 1
+#endif
+
+#ifndef MOTOR_PWM_PERIOD_COUNTS
 #define MOTOR_PWM_PERIOD_COUNTS 1000U
+#endif
 
 #ifndef GRAY_L2_PORT
 #define GRAY_L2_PORT GPIOA

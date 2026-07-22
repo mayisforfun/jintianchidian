@@ -69,6 +69,19 @@ BIN1/BIN2/PWMB -> 右电机
 
 当前五路灰度循迹代码暂时不需要编码器。后面要做速度闭环 PID 时再配置这四个 GPIO/中断或定时器捕获。
 
+## MPU6050 / 陀螺仪
+
+表格中陀螺仪接口为：
+
+| 模块引脚 | MSPM0 引脚 | 功能 |
+|---|---:|---|
+| T_SCL | A17 | `I2C1_SCL` |
+| T_SDA | A16 | `I2C1_SDA` |
+| INT | A14 | GPIO 输入 |
+
+当前 `mpu6050.c` 使用轮询 I2C，不需要先接入 `INT`。SysConfig 里先配置
+A17/A16 为 I2C Controller 即可。
+
 ## CCS / SysConfig 配置建议
 
 ### GPIO 输入组 `GRAY`
@@ -105,6 +118,17 @@ TIMG0_C0 -> A12 -> TB6612 PWMA
 TIMG0_C1 -> A13 -> TB6612 PWMB
 ```
 
+需要同时核对 Timer PWM 的 period/load 是否等于代码里的
+`MOTOR_PWM_PERIOD_COUNTS`。当前代码默认是 `1000U`。
+
+还要核对 compare 与占空比方向。当前代码默认：
+
+```c
+#define MOTOR_PWM_COMPARE_IS_INVERTED 1
+```
+
+即 `compare = period - duty`。如果 SysConfig 配的是正向 PWM，请改为 `0`。
+
 如果 SysConfig 生成的 PWM 实例名不是 `PWM_0_INST` / `PWM_1_INST`，需要修改 `board_port.c` 顶部的：
 
 ```c
@@ -122,4 +146,3 @@ TIMG0_C1 -> A13 -> TB6612 PWMB
 #define RIGHT_PWM_INST PWM_0_INST
 #define RIGHT_PWM_CC_INDEX DL_TIMER_CC_1_INDEX
 ```
-
