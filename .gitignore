@@ -1,0 +1,17 @@
+# CCS build output
+Debug/
+Release/
+*.out
+*.map
+*.hex
+
+# SysConfig generated (may vary per machine)
+.syscfg/
+**/ti_msp_dl_config.*
+
+# IDE
+.settings/
+.project
+.cproject
+.ccsproject
+.vscode/
