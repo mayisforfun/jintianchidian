@@ -20,6 +20,18 @@ volatile int16_t g_imu_gyro_y = 0;
 volatile int16_t g_imu_gyro_z = 0;
 volatile uint32_t g_imu_read_count = 0;
 volatile uint32_t g_imu_read_fail_count = 0;
+volatile uint8_t g_gray_bits = 0;
+volatile bool g_gray_l2 = false;
+volatile bool g_gray_l1 = false;
+volatile bool g_gray_c = false;
+volatile bool g_gray_r1 = false;
+volatile bool g_gray_r2 = false;
+volatile bool g_line_seen = false;
+volatile bool g_line_sensor_valid = false;
+volatile int16_t g_line_position = 0;
+volatile int16_t g_line_error = 0;
+volatile int16_t g_line_left_speed = 0;
+volatile int16_t g_line_right_speed = 0;
 
 static void update_imu_debug_values(const MPU6050RawData *imu_raw)
 {
@@ -29,6 +41,22 @@ static void update_imu_debug_values(const MPU6050RawData *imu_raw)
     g_imu_gyro_x = imu_raw->gyro_x;
     g_imu_gyro_y = imu_raw->gyro_y;
     g_imu_gyro_z = imu_raw->gyro_z;
+}
+
+static void update_line_debug_values(const LineFollowState *line_state)
+{
+    g_gray_bits = line_state->raw_sensor_bits;
+    g_gray_l2 = (line_state->raw_sensor_bits & (1U << 0)) != 0U;
+    g_gray_l1 = (line_state->raw_sensor_bits & (1U << 1)) != 0U;
+    g_gray_c = (line_state->raw_sensor_bits & (1U << 2)) != 0U;
+    g_gray_r1 = (line_state->raw_sensor_bits & (1U << 3)) != 0U;
+    g_gray_r2 = (line_state->raw_sensor_bits & (1U << 4)) != 0U;
+    g_line_seen = line_state->line_seen;
+    g_line_sensor_valid = line_state->sensor_valid;
+    g_line_position = line_state->position;
+    g_line_error = line_state->error;
+    g_line_left_speed = line_state->left_speed;
+    g_line_right_speed = line_state->right_speed;
 }
 
 int main(void)
@@ -68,6 +96,7 @@ int main(void)
         }
 
         LineFollow_update(&line_state, &g_line_config, sensor_bits);
+        update_line_debug_values(&line_state);
         Board_setMotorSpeed(line_state.left_speed, line_state.right_speed);
 
         Board_delayMs(1);

@@ -1,8 +1,33 @@
 # Version Log
 
-## 2026-07-23 - IMU Watch debug variables
+## 2026-07-23 - Gray sensor and line-follow Watch variables
 
 Commit: pending
+
+Status:
+- Added global volatile gray sensor and line-follow debug variables for CCS Watch / Expressions.
+- Intended for testing gray sensor wiring and line-follow algorithm output before motor testing.
+
+Changed:
+- `main.c`
+  - Added `g_gray_bits`.
+  - Added `g_gray_l2/l1/c/r1/r2`.
+  - Added `g_line_seen`.
+  - Added `g_line_sensor_valid`.
+  - Added `g_line_position`.
+  - Added `g_line_error`.
+  - Added `g_line_left_speed`.
+  - Added `g_line_right_speed`.
+
+How to test:
+- Watch `g_gray_bits` in binary format.
+- Move a black line under each gray sensor and confirm only the matching bit changes.
+- Watch `g_line_error`; left-side line should be negative, right-side line should be positive.
+- Watch `g_line_left_speed` and `g_line_right_speed` to verify the algorithm output before connecting motors.
+
+## 2026-07-23 - IMU Watch debug variables
+
+Commit: `d4945ae`
 
 Status:
 - Added global volatile MPU6050 debug variables for CCS Watch / Expressions.
