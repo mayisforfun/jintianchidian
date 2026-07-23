@@ -8,6 +8,7 @@
 - `line_follow.c/.h`：五路灰度识别和 PD 循迹算法。
 - `board_port.c/.h`：MSPM0 GPIO、PWM、电机方向接口。
 - `mpu6050.c/.h`：MPU6050 初始化、原始数据读取和默认量程换算。
+- `CHANGELOG.md`：每次代码更新、测试状态和 Git 提交记录。
 
 ## SysConfig 需要建立的外设
 
