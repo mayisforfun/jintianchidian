@@ -2,7 +2,7 @@
 
 ## 2026-07-23 - Gray sensor and line-follow Watch variables
 
-Commit: pending
+Commit: `13f49e0`
 
 Status:
 - Added global volatile gray sensor and line-follow debug variables for CCS Watch / Expressions.
